@@ -10,6 +10,12 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from api.models import db, User
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
 # from models import Person
 
@@ -18,6 +24,10 @@ static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+jwt = JWTManager(app)
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -42,6 +52,8 @@ app.register_blueprint(api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
 
+# Allow CORS requests to this API
+CORS(app)
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -67,6 +79,12 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+# Tengo que definir mis rutas en el routes.py y en vez de usar las rutas completas, usar la variable BACKEND_URL de .env
+
+# Protect a route with jwt_required, which will kick out requests
+# without a valid JWT present.
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
